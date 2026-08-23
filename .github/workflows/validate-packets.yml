@@ -1,0 +1,19 @@
+name: Validate product packets
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install pyyaml
+      - name: Validate every packet
+        run: |
+          shopt -s nullglob
+          fail=0
+          for p in products/*/product-packet.yaml; do
+            echo "=== $p ==="
+            python3 scripts/pf-validate.py "$p" || fail=1
+          done
+          exit $fail

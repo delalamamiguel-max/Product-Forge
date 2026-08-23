@@ -1,0 +1,157 @@
+# product-packet.yaml — the single source of truth for one product.
+# Every artifact reads from and writes to this file. scripts/pf-validate.py enforces it.
+# IDs are stable forever: never renumber, never reuse.
+
+$schema: "product-forge/v1"
+
+product:
+  slug: string            # kebab-case, matches products/<slug>/
+  name: string
+  created: date
+  phase: enum             # constitution|discover|benchmark|specify|clarify|design|plan|stories|audit|handoff
+
+constitution:
+  principles:
+    - id: PRIN-01
+      statement: string   # testable, not aspirational
+      enforced_by: [NFR-001, ADR-001]
+  non_goals: [string]
+  quality_floor:
+    accessibility: string
+    performance: string
+    support_matrix: string
+  compliance: [string]    # or ["none identified"]
+
+domain:
+  industry: string
+  sub_vertical: string    # required — "generic B2B SaaS" fails validation
+  icp:
+    primary_user: {role: string, context: string, fluency: string, device: string}
+    buyer: {role: string, motivation: string}
+  jtbd:
+    - id: DOM-01
+      job: string
+      functional: string
+      emotional: string
+      social: string
+  current_alternative: {what: string, works: string, fails: string, cost: string}
+  regulatory:
+    - framework: string
+      applies: boolean
+      obligation: string
+      maps_to: [NFR-004]
+  constraints:
+    - id: DOM-nn
+      constraint: string
+      design_implication: string
+  glossary:
+    - term: string
+      definition: string
+      avoid: string
+  benchmark_candidates: [string]
+
+benchmarks:
+  - id: BM-01
+    name: string
+    type: enum            # direct|category_leader|outlier
+    url: string
+    scores:
+      functionality: {score: int, justification: string, source: url}
+      usability: {score: int, justification: string, source: url}
+      visual: {score: int, justification: string, source: url}
+      ux_craft: {score: int, justification: string, source: url}
+    standout: string
+
+feature_candidates:
+  - source: BM-01
+    feature: string
+    axis: enum            # functionality|usability|visual|ux_craft
+    effort: enum          # S|M|L
+    decision: enum        # IN|OUT|LATER  — required, no nulls
+    reason: string
+    becomes: FR-001       # required when decision == IN
+
+requirements:
+  - id: FR-001
+    title: string
+    behavior: string
+    traces_to: [DOM-01, BM-01]   # or ["original_bet"] with hypothesis
+    hypothesis: string           # required when traces_to includes original_bet
+    rules:
+      - id: RULE-FR001-01
+        statement: string
+    verification: string
+    status: enum          # active|superseded
+    superseded_by: FR-nnn
+
+nfrs:
+  - id: NFR-001
+    category: enum        # performance|security|accessibility|availability|compliance
+    requirement: string   # must contain a number
+    measurement: string
+    traces_to: [PRIN-01]
+
+design:
+  density_model: enum     # operational|consumer|field|prosumer
+  tokens:
+    - {id: DS-01, token: string, value: string, rationale: string, source: BM-nn}
+  components:
+    - id: CMP-01
+      name: string
+      required_by: [FR-001]
+      states: [default, hover, focus_visible, active, disabled, loading, empty, error, overflow]
+  flows:
+    - {id: UX-01, name: string, serves: [DOM-01], steps_to_core: int, failure_branches: [string]}
+
+architecture:
+  stack: [{layer: string, choice: string, justified_against: PRIN-nn}]
+  entities: [{name: string, tenancy: string, retention: string, required_by: [FR-001]}]
+  integrations:
+    - system: string
+      rate_limit: string
+      freshness: string       # real_time|hourly|daily|batch — shapes what the PRD may promise
+      failure_mode: string
+      product_implication: string
+
+adrs:
+  - {id: ADR-001, title: string, context: string, decision: string, consequences: string, enforces: PRIN-nn}
+
+epics:
+  - {id: EPIC-01, outcome: string, covers: [FR-001]}
+
+stories:
+  - id: US-001
+    epic: EPIC-01
+    persona: string
+    capability: string
+    outcome: string
+    traces_to: [FR-001, UX-01, CMP-01]
+    acceptance_criteria: [{given: string, when: string, then: string, type: happy|edge|failure}]
+    verification: string
+
+risks:
+  - {id: RISK-01, risk: string, likelihood: H|M|L, impact: H|M|L, trigger: string, mitigation: string, contingency: string, owner: string, status: open|mitigated|accepted}
+
+metrics:
+  north_star: {metric: string, baseline: string}
+  kpis:
+    - {id: KPI-01, metric: string, baseline: string, target: string, window: string, instrumentation: string, moved_by: [EPIC-01]}
+  guardrails:
+    - {id: GRD-01, metric: string, threshold: string, action: string}
+
+roadmap:
+  - slice: 1
+    outcome: string       # user-facing; "foundation" fails validation
+    stories: [US-001]
+    entry_criteria: [string]
+    exit_criteria: [string]
+    moves: [KPI-01]
+    depends_on: []
+
+decisions:
+  - {date: date, question: string, decision: string, rationale: string, phase: string}
+
+audit:
+  last_run: datetime
+  status: enum            # pass|fail
+  failures: [{check: string, offending_ids: [string], remediation: string}]
