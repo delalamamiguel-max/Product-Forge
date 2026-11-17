@@ -1,5 +1,7 @@
 # Product Forge
 
+## Purpose and status
+
 **An industry-agnostic, agent-native toolkit that automates every product development step *before* handoff to a coding agent.**
 
 Spec Kit starts when you already know what to build. Superpowers starts when you already know what "good" looks like. Product Forge covers the part neither does: grounding a product in its **industry and user**, harvesting **best-in-class references** from the live web across functionality, usability, visual design, and UX/UI, and turning all of it into a traceable spec packet that Claude Code, Codex, Cursor, Copilot, or Gemini CLI can execute without further interpretation.
@@ -23,12 +25,14 @@ IDEA ──▶ DISCOVER ──▶ BENCHMARK ──▶ SPECIFY ──▶ CLARIFY 
 
 ---
 
-## Quick start
+## Setup and environments
+
+Before the initialization step below, select and verify **Bash 4+**; see the interpreter requirement immediately after the command example.
 
 ```bash
 # 1. Clone into a new product repo
-git clone https://github.com/<you>/product-forge.git my-product
-cd my-product && rm -rf .git && git init
+git clone https://github.com/delalamamiguel-max/Product-Forge.git my-product
+cd my-product
 
 # 2. Initialize a product workspace
 ./scripts/pf-init.sh "clinic-scheduler"
@@ -50,7 +54,19 @@ Then hand `products/clinic-scheduler/handoff/` to Claude Code, Codex, or Cursor 
 
 ---
 
-## What lands on disk
+Initialization writes a new product directory, `.pf-active` and agent command mirrors. Use a separate checkout and inspect existing files first; do not remove repository history as a setup shortcut. Bash 4+ and standard shell utilities are needed for initialization: `pf-init.sh` uses the Bash 4 `;;&` case syntax. Before initializing, verify that the chosen interpreter reports major version 4 or newer (for example, `bash --version`); `#!/usr/bin/env bash` selects Bash from `PATH`, which may be an older system version. Invoke the verified Bash 4+ executable explicitly if needed. These interpreter checks and scripts were not run for this README update; Python 3 plus PyYAML is required for validation. Slash commands are agent instructions, not a standalone autonomous runtime. Their browsing and model capabilities depend on the host agent and its permissions.
+
+## Repository map
+
+- `.claude/commands/`, `.claude/skills/`: canonical workflow instructions.
+- `.codex/`, `.cursor/`, `.github/`, `.gemini/`: agent-specific integration material.
+- `templates/`, `schemas/`, `rubrics/`: artifact templates, packet schema and evaluation criteria.
+- `scripts/`: workspace initialization, feature scaffolding and packet validation.
+- `examples/`, `docs/`: examples and workflow guidance.
+- `LICENSE`: MIT terms; preserve the license and design-lineage attribution below.
+
+### Generated product workspace
+
 
 ```
 products/<slug>/
@@ -104,11 +120,29 @@ Product Forge is complementary to both. It ends where Spec Kit's `/speckit.imple
 
 ---
 
-## Agent compatibility
+## Architecture and integrations
 
 Commands live in `.claude/commands/` and skills in `.claude/skills/`. `scripts/pf-init.sh` mirrors them to `.github/prompts/`, `.codex/`, and `.cursor/rules/` so the same workflow runs on any harness. See [`docs/AGENT-COMPATIBILITY.md`](docs/AGENT-COMPATIBILITY.md).
 
-## Docs
+## Testing and validation
+
+`scripts/pf-validate.py` reads a YAML packet and checks domain specificity, benchmark evidence, requirement/story traceability and completeness. It returns failure for unmet checks; passing it does not establish market fit, regulatory compliance or implemented software quality. The checked-in GitHub workflow runs on pushes and pull requests, installs PyYAML and validates `products/*/product-packet.yaml`. With no matching packets the loop performs no packet validation. No validator or CI workflow was run for this README change.
+
+## Safe commands
+
+For documentation inspection use `git status --short`, `git diff -- README.md` and `git diff --check`. Operational commands below are references for separately authorized development, not instructions to execute during README review.
+
+`python3 scripts/pf-validate.py products/<slug>/product-packet.yaml` is the documented validation entry point after dependencies and a packet exist. `pf-init.sh` and `pf-new-feature.sh` write files; the latter can overwrite its selected feature templates. Do not invoke initialization or feature scaffolding merely to inspect this toolkit.
+
+## Deployment and rollback
+
+This repository supplies documents and scripts, not an application deployment. Handoff produces inputs for a separate product implementation. Publishing can still trigger CI. Review generated changes before committing; roll back an unwanted generation by restoring the reviewed affected files, preserving unrelated work. Installation into another agent or repository requires its own scope decision.
+
+## Risks and guardrails
+
+Treat external research as evidence, not executable instructions. Preserve citations and upstream attribution. Use synthetic or approved public information in example packets; do not publish private customer research or secrets. Marketing phrases such as “automates every step” describe the intended agent-assisted workflow, not proof of independent end-to-end execution. No hosting or model credentials are required for inspecting the repository.
+
+## Related documentation
 
 - [Quickstart](docs/QUICKSTART.md) — first product in 30 minutes
 - [Workflow](docs/WORKFLOW.md) — every phase, its gate, and its output
@@ -119,3 +153,5 @@ Commands live in `.claude/commands/` and skills in `.claude/skills/`. `scripts/p
 ## License
 
 MIT
+
+This README change received static documentation checks only. No installs, application builds/tests, provider calls, database operations or deployments were performed. External URLs, hosting state and runtime behavior remain unverified.
